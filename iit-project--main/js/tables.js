@@ -72,7 +72,7 @@ function getAnnexureTableIds(n) {
     4: ['anx4-routes','anx4-cluster-routes'],
     5: ['anx5-mining','anx5-patta','anx5-desilt','anx5-msand'],
     6: ['anx6-final-clusters','anx6-contiguous-clusters'],
-    7: ['anx7-patta-final']
+    7: ['anx7-routes','anx7-cluster-routes']
   }[n] || [];
 }
 
@@ -97,7 +97,8 @@ function findAnnexureTableId(n, sheetName, tableIds) {
     'anx5-msand':  ['m-sand','msand','plant','sand plant'],
     'anx6-final-clusters': ['final cluster','cluster summary'],
     'anx6-contiguous-clusters': ['contiguous'],
-    'anx7-patta-final': ['patta']
+    'anx7-routes': ['route','routes','lease'],
+    'anx7-cluster-routes': ['cluster route','cluster routes','cluster']
   };
 
   for (const tableId of tableIds) {
@@ -147,6 +148,15 @@ function handleTableUpload(e) {
   const sel = document.getElementById('table-upload-select');
   const tableId = sel ? sel.value : null;
   if (!tableId) { toast('Select a table first','warn'); return; }
+  if (tableId === 'anx7-routes' || tableId === 'anx7-cluster-routes') {
+    if (typeof handleTableUploadAnx7 === 'function') {
+      handleTableUploadAnx7(f, tableId === 'anx7-cluster-routes' ? 'cluster' : 'individual');
+    } else {
+      toast('Annexure VII is not ready yet','warn');
+    }
+    e.target.value = '';
+    return;
+  }
   const reader = new FileReader();
   reader.onload = function(evt) {
     try {

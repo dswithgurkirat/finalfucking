@@ -201,7 +201,8 @@ function generateFinalPDF() {
     { title: 'ANNEXURE V(d) — M-SAND PLANTS', id: '#anx5-msand' },
     { title: 'ANNEXURE VI — FINAL CLUSTERS', id: '#anx6-final-clusters' },
     { title: 'ANNEXURE VI — FINAL CONTIGUOUS CLUSTERS', id: '#anx6-contiguous-clusters' },
-    { title: 'ANNEXURE VII — FINAL PATTA LANDS', id: '#anx7-patta-final' },
+    { title: 'ANNEXURE VII(a) — LEASE ROUTES', id: '#anx7-routes' },
+    { title: 'ANNEXURE VII(b) — CLUSTER ROUTES', id: '#anx7-cluster-routes' },
     { title: 'ADDITIONAL — SAND GHATS COORDS', id: '#anx-coords-tbl' },
     { title: 'ADDITIONAL — BENCH MARKS', id: '#anx-benchmark-tbl' },
     { title: 'ADDITIONAL — CORS STATIONS', id: '#anx-cors-tbl' },
@@ -225,6 +226,10 @@ function generateFinalPDF() {
       tables = Array.from(document.querySelectorAll('table[id^="anx5-desilt"]'));
     } else if (tblConfig.id === '#anx5-msand') {
       tables = Array.from(document.querySelectorAll('table[id^="anx5-msand"]'));
+    } else if (tblConfig.id === '#anx7-routes') {
+      tables = Array.from(document.querySelectorAll('#anx7-individual-routes-container table.anx7-routes-table'));
+    } else if (tblConfig.id === '#anx7-cluster-routes') {
+      tables = Array.from(document.querySelectorAll('#anx7-cluster-routes-container table.anx7-cluster-routes-table'));
     } else {
       const el = document.querySelector(tblConfig.id);
       if (el) tables.push(el);

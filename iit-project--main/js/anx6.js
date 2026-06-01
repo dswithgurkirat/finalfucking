@@ -55,14 +55,25 @@ function toNumberAnx6(value) {
   return Number.isFinite(num) ? num : 0;
 }
 
+function defaultNAAnx6(value) {
+  const text = String(value === undefined || value === null ? '' : value).trim();
+  return text || 'NA';
+}
+
+function fillNAAnx6(el) {
+  if (el && String(el.innerText || '').trim() === '') el.innerText = 'NA';
+}
+window.fillNAAnx6 = fillNAAnx6;
+
 function formatNumberAnx6(value, decimals = 2) {
+  if (String(value === undefined || value === null ? '' : value).trim() === '' || String(value).trim().toUpperCase() === 'NA') return 'NA';
   const num = toNumberAnx6(value);
   return num ? num.toFixed(decimals) : '0.00';
 }
 
 function getCellTextAnx6(td) {
   const select = td.querySelector('select');
-  return select ? select.value : td.innerText.trim();
+  return defaultNAAnx6(select ? select.value : td.innerText);
 }
 
 function renderAnx6() {
@@ -80,28 +91,30 @@ function renderAnx6Clusters() {
   tbody.innerHTML = '';
 
   anx6ClusterData.forEach((row, index) => {
-    const mineral = row.mineral !== '' && row.mineral !== null && row.mineral !== undefined
+    const mineral = String(row.mineral ?? '').trim().toUpperCase() === 'NA'
+      ? 'NA'
+      : row.mineral !== '' && row.mineral !== null && row.mineral !== undefined
       ? toNumberAnx6(row.mineral)
       : toNumberAnx6(row.excavation) * 0.6;
     totalArea += toNumberAnx6(row.area);
     totalExcavation += toNumberAnx6(row.excavation);
-    totalMineral += mineral;
+    totalMineral += toNumberAnx6(mineral);
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td contenteditable="true" oninput="updateAnx6Cluster(${index}, 'river', this.innerText)">${escapeHtmlAnx6(row.river)}</td>
-      <td contenteditable="true" oninput="updateAnx6Cluster(${index}, 'cluster', this.innerText)">${escapeHtmlAnx6(row.cluster)}</td>
-      <td contenteditable="true" style="white-space:pre-line;" oninput="updateAnx6Cluster(${index}, 'lease', this.innerText)">${escapeHtmlAnx6(row.lease)}</td>
+      <td contenteditable="true" onblur="fillNAAnx6(this)" oninput="updateAnx6Cluster(${index}, 'river', this.innerText)">${escapeHtmlAnx6(defaultNAAnx6(row.river))}</td>
+      <td contenteditable="true" onblur="fillNAAnx6(this)" oninput="updateAnx6Cluster(${index}, 'cluster', this.innerText)">${escapeHtmlAnx6(defaultNAAnx6(row.cluster))}</td>
+      <td contenteditable="true" onblur="fillNAAnx6(this)" style="white-space:pre-line;" oninput="updateAnx6Cluster(${index}, 'lease', this.innerText)">${escapeHtmlAnx6(defaultNAAnx6(row.lease))}</td>
       <td>
         <select onchange="updateAnx6Cluster(${index}, 'location', this.value)">
           <option ${row.location === 'Riverbed' ? 'selected' : ''}>Riverbed</option>
           <option ${row.location === 'Patta Land' ? 'selected' : ''}>Patta Land</option>
         </select>
       </td>
-      <td contenteditable="true" style="white-space:pre-line;" oninput="updateAnx6Cluster(${index}, 'village', this.innerText)">${escapeHtmlAnx6(row.village)}</td>
-      <td contenteditable="true" oninput="updateAnx6Cluster(${index}, 'area', this.innerText); renderAnx6ClusterTotals();">${formatNumberAnx6(row.area)}</td>
-      <td contenteditable="true" oninput="updateAnx6Cluster(${index}, 'excavation', this.innerText); updateAnx6ClusterMineral(${index}); renderAnx6ClusterTotals();">${formatNumberAnx6(row.excavation)}</td>
-      <td contenteditable="true" oninput="updateAnx6Cluster(${index}, 'mineral', this.innerText); renderAnx6ClusterTotals();">${formatNumberAnx6(mineral)}</td>
+      <td contenteditable="true" onblur="fillNAAnx6(this)" style="white-space:pre-line;" oninput="updateAnx6Cluster(${index}, 'village', this.innerText)">${escapeHtmlAnx6(defaultNAAnx6(row.village))}</td>
+      <td contenteditable="true" onblur="fillNAAnx6(this)" oninput="updateAnx6Cluster(${index}, 'area', this.innerText); renderAnx6ClusterTotals();">${formatNumberAnx6(row.area)}</td>
+      <td contenteditable="true" onblur="fillNAAnx6(this)" oninput="updateAnx6Cluster(${index}, 'excavation', this.innerText); updateAnx6ClusterMineral(${index}); renderAnx6ClusterTotals();">${formatNumberAnx6(row.excavation)}</td>
+      <td contenteditable="true" onblur="fillNAAnx6(this)" oninput="updateAnx6Cluster(${index}, 'mineral', this.innerText); renderAnx6ClusterTotals();">${formatNumberAnx6(mineral)}</td>
       <td class="no-print">${anx6ActionButton('cluster', index)}</td>`;
     tbody.appendChild(tr);
   });
@@ -136,16 +149,16 @@ window.renderAnx6ClusterTotals = renderAnx6ClusterTotals;
 
 function updateAnx6Cluster(index, key, value) {
   if (!anx6ClusterData[index]) return;
-  anx6ClusterData[index][key] = ['area', 'excavation', 'mineral'].includes(key) ? toNumberAnx6(value) : String(value || '').trim();
+  anx6ClusterData[index][key] = ['area', 'excavation', 'mineral'].includes(key) ? defaultNAAnx6(value) : defaultNAAnx6(value);
 }
 window.updateAnx6Cluster = updateAnx6Cluster;
 
 function updateAnx6ClusterMineral(index) {
   const row = anx6ClusterData[index];
   if (!row) return;
-  row.mineral = toNumberAnx6(row.excavation) * 0.6;
+  row.mineral = String(row.excavation).trim().toUpperCase() === 'NA' ? 'NA' : toNumberAnx6(row.excavation) * 0.6;
   const tr = document.querySelectorAll('#anx6-final-clusters tbody tr')[index];
-  if (tr?.cells[7]) tr.cells[7].innerText = row.mineral.toFixed(2);
+  if (tr?.cells[7]) tr.cells[7].innerText = row.mineral === 'NA' ? 'NA' : toNumberAnx6(row.mineral).toFixed(2);
 }
 window.updateAnx6ClusterMineral = updateAnx6ClusterMineral;
 
@@ -163,20 +176,20 @@ function renderAnx6Contiguous() {
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td contenteditable="true" oninput="updateAnx6Contiguous(${index}, 'river', this.innerText)">${escapeHtmlAnx6(row.river)}</td>
-      <td contenteditable="true" oninput="updateAnx6Contiguous(${index}, 'contiguous', this.innerText)">${escapeHtmlAnx6(row.contiguous)}</td>
-      <td contenteditable="true" oninput="updateAnx6Contiguous(${index}, 'cluster', this.innerText)">${escapeHtmlAnx6(row.cluster)}</td>
-      <td contenteditable="true" oninput="updateAnx6Contiguous(${index}, 'leases', this.innerText)">${escapeHtmlAnx6(row.leases)}</td>
+      <td contenteditable="true" onblur="fillNAAnx6(this)" oninput="updateAnx6Contiguous(${index}, 'river', this.innerText)">${escapeHtmlAnx6(defaultNAAnx6(row.river))}</td>
+      <td contenteditable="true" onblur="fillNAAnx6(this)" oninput="updateAnx6Contiguous(${index}, 'contiguous', this.innerText)">${escapeHtmlAnx6(defaultNAAnx6(row.contiguous))}</td>
+      <td contenteditable="true" onblur="fillNAAnx6(this)" oninput="updateAnx6Contiguous(${index}, 'cluster', this.innerText)">${escapeHtmlAnx6(defaultNAAnx6(row.cluster))}</td>
+      <td contenteditable="true" onblur="fillNAAnx6(this)" oninput="updateAnx6Contiguous(${index}, 'leases', this.innerText)">${escapeHtmlAnx6(defaultNAAnx6(row.leases))}</td>
       <td>
         <select onchange="updateAnx6Contiguous(${index}, 'location', this.value)">
           <option ${row.location === 'Riverbed' ? 'selected' : ''}>Riverbed</option>
           <option ${row.location === 'Patta Land' ? 'selected' : ''}>Patta Land</option>
         </select>
       </td>
-      <td contenteditable="true" oninput="updateAnx6Contiguous(${index}, 'distance', this.innerText)">${escapeHtmlAnx6(row.distance)}</td>
-      <td contenteditable="true" style="white-space:pre-line;" oninput="updateAnx6Contiguous(${index}, 'village', this.innerText)">${escapeHtmlAnx6(row.village)}</td>
-      <td contenteditable="true" oninput="updateAnx6Contiguous(${index}, 'area', this.innerText); renderAnx6ContiguousTotals();">${formatNumberAnx6(row.area)}</td>
-      <td contenteditable="true" oninput="updateAnx6Contiguous(${index}, 'mineral', this.innerText); renderAnx6ContiguousTotals();">${formatNumberAnx6(row.mineral)}</td>
+      <td contenteditable="true" onblur="fillNAAnx6(this)" oninput="updateAnx6Contiguous(${index}, 'distance', this.innerText)">${escapeHtmlAnx6(defaultNAAnx6(row.distance))}</td>
+      <td contenteditable="true" onblur="fillNAAnx6(this)" style="white-space:pre-line;" oninput="updateAnx6Contiguous(${index}, 'village', this.innerText)">${escapeHtmlAnx6(defaultNAAnx6(row.village))}</td>
+      <td contenteditable="true" onblur="fillNAAnx6(this)" oninput="updateAnx6Contiguous(${index}, 'area', this.innerText); renderAnx6ContiguousTotals();">${formatNumberAnx6(row.area)}</td>
+      <td contenteditable="true" onblur="fillNAAnx6(this)" oninput="updateAnx6Contiguous(${index}, 'mineral', this.innerText); renderAnx6ContiguousTotals();">${formatNumberAnx6(row.mineral)}</td>
       <td class="no-print">${anx6ActionButton('contiguous', index)}</td>`;
     tbody.appendChild(tr);
   });
@@ -207,18 +220,18 @@ window.renderAnx6ContiguousTotals = renderAnx6ContiguousTotals;
 
 function updateAnx6Contiguous(index, key, value) {
   if (!anx6ContiguousData[index]) return;
-  anx6ContiguousData[index][key] = ['area', 'mineral'].includes(key) ? toNumberAnx6(value) : String(value || '').trim();
+  anx6ContiguousData[index][key] = defaultNAAnx6(value);
 }
 window.updateAnx6Contiguous = updateAnx6Contiguous;
 
 function addClusterRowAnx6() {
-  anx6ClusterData.push({ river: '', cluster: '', lease: '', location: 'Riverbed', village: '', area: 0, excavation: 0, mineral: 0 });
+  anx6ClusterData.push({ river: 'NA', cluster: 'NA', lease: 'NA', location: 'Riverbed', village: 'NA', area: 'NA', excavation: 'NA', mineral: 'NA' });
   renderAnx6Clusters();
 }
 window.addClusterRowAnx6 = addClusterRowAnx6;
 
 function addContiguousRowAnx6() {
-  anx6ContiguousData.push({ river: '', contiguous: '', cluster: '', leases: '', location: 'Riverbed', distance: '', village: '', area: 0, mineral: 0 });
+  anx6ContiguousData.push({ river: 'NA', contiguous: 'NA', cluster: 'NA', leases: 'NA', location: 'Riverbed', distance: 'NA', village: 'NA', area: 'NA', mineral: 'NA' });
   renderAnx6Contiguous();
 }
 window.addContiguousRowAnx6 = addContiguousRowAnx6;
@@ -351,30 +364,30 @@ function columnValueAnx6(row, header, aliases) {
 function mapAnx6Row(row, header, sectionType, rowNumber) {
   if (sectionType === 'cluster') {
     const mapped = {
-      river: String(columnValueAnx6(row, header, ['River Name']) || '').trim(),
-      cluster: String(columnValueAnx6(row, header, ['Cluster No.', 'Cluster No']) || '').trim(),
-      lease: String(columnValueAnx6(row, header, ['Lease No']) || '').trim(),
+      river: defaultNAAnx6(columnValueAnx6(row, header, ['River Name'])),
+      cluster: defaultNAAnx6(columnValueAnx6(row, header, ['Cluster No.', 'Cluster No'])),
+      lease: defaultNAAnx6(columnValueAnx6(row, header, ['Lease No'])),
       location: String(columnValueAnx6(row, header, ['Location (Riverbed/Patta Land)', 'Location']) || 'Riverbed').trim(),
-      village: String(columnValueAnx6(row, header, ['Village']) || '').trim(),
-      area: toNumberAnx6(columnValueAnx6(row, header, ['Area (in Ha.)', 'Area'])),
-      excavation: toNumberAnx6(columnValueAnx6(row, header, ['Total Excavation (MT)', 'Total Excavation'])),
-      mineral: toNumberAnx6(columnValueAnx6(row, header, ['Total Mineral Excavation (MT)', 'Total Mineral Excavation']))
+      village: defaultNAAnx6(columnValueAnx6(row, header, ['Village'])),
+      area: defaultNAAnx6(columnValueAnx6(row, header, ['Area (in Ha.)', 'Area'])),
+      excavation: defaultNAAnx6(columnValueAnx6(row, header, ['Total Excavation (MT)', 'Total Excavation'])),
+      mineral: defaultNAAnx6(columnValueAnx6(row, header, ['Total Mineral Excavation (MT)', 'Total Mineral Excavation']))
     };
     validateMappedAnx6Row(mapped, sectionType, rowNumber);
-    if (!mapped.mineral && mapped.excavation) mapped.mineral = mapped.excavation * 0.6;
+    if (mapped.mineral === 'NA' && mapped.excavation !== 'NA') mapped.mineral = toNumberAnx6(mapped.excavation) * 0.6;
     return mapped;
   }
 
   const mapped = {
-    river: String(columnValueAnx6(row, header, ['River Name']) || '').trim(),
-    contiguous: String(columnValueAnx6(row, header, ['Contiguous Cluster No.', 'Contiguous Cluster No']) || '').trim(),
-    cluster: String(columnValueAnx6(row, header, ['Cluster No']) || '').trim(),
-    leases: String(columnValueAnx6(row, header, ['Number of leases in the cluster', 'Number of leases']) || '').trim(),
+    river: defaultNAAnx6(columnValueAnx6(row, header, ['River Name'])),
+    contiguous: defaultNAAnx6(columnValueAnx6(row, header, ['Contiguous Cluster No.', 'Contiguous Cluster No'])),
+    cluster: defaultNAAnx6(columnValueAnx6(row, header, ['Cluster No'])),
+    leases: defaultNAAnx6(columnValueAnx6(row, header, ['Number of leases in the cluster', 'Number of leases'])),
     location: String(columnValueAnx6(row, header, ['Location (Riverbed / Patta Land)', 'Location']) || 'Riverbed').trim(),
-    distance: String(columnValueAnx6(row, header, ['Distance between clusters', 'Distance']) || '').trim(),
-    village: String(columnValueAnx6(row, header, ['Village']) || '').trim(),
-    area: toNumberAnx6(columnValueAnx6(row, header, ['Area Of Cluster (Ha)', 'Area'])),
-    mineral: toNumberAnx6(columnValueAnx6(row, header, ['Total Mineral Excavation (MT)', 'Total Mineral Excavation']))
+    distance: defaultNAAnx6(columnValueAnx6(row, header, ['Distance between clusters', 'Distance'])),
+    village: defaultNAAnx6(columnValueAnx6(row, header, ['Village'])),
+    area: defaultNAAnx6(columnValueAnx6(row, header, ['Area Of Cluster (Ha)', 'Area'])),
+    mineral: defaultNAAnx6(columnValueAnx6(row, header, ['Total Mineral Excavation (MT)', 'Total Mineral Excavation']))
   };
   validateMappedAnx6Row(mapped, sectionType, rowNumber);
   return mapped;
@@ -390,7 +403,7 @@ function validateMappedAnx6Row(row, sectionType, rowNumber) {
   if (missing.length) throw new Error(`Required field missing in row ${rowNumber}: ${missing.join(', ')}.`);
 
   const numeric = sectionType === 'cluster' ? ['area', 'excavation'] : ['area', 'mineral'];
-  const invalid = numeric.filter(key => !Number.isFinite(row[key]) || row[key] < 0);
+  const invalid = numeric.filter(key => String(row[key]).trim().toUpperCase() !== 'NA' && (!Number.isFinite(toNumberAnx6(row[key])) || toNumberAnx6(row[key]) < 0));
   if (invalid.length) throw new Error(`Invalid values in row ${rowNumber}: ${invalid.join(', ')} must be valid numbers.`);
 }
 

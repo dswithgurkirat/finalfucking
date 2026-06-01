@@ -192,7 +192,7 @@
       <button class="sb-item" onclick="showView('anx4',this)"><span class="sb-ico">Ⅳ</span>Annexure IV — Transport</button>
       <button class="sb-item" onclick="showView('anx5',this)"><span class="sb-ico">Ⅴ</span>Annexure V — Sand Mining Report</button>
       <button class="sb-item" onclick="showView('anx6',this)"><span class="sb-ico">Ⅵ</span>Annexure VI — Final Cluster Details</button>
-      <button class="sb-item" onclick="showView('anx7',this)"><span class="sb-ico">Ⅶ</span>Annexure VII — Final Patta Lands</button>
+      <button class="sb-item" onclick="showView('anx7',this)"><span class="sb-ico">Ⅶ</span>Annexure VII — Transport</button>
       <button class="sb-item" onclick="showView('annexures-extra',this)"><span class="sb-ico"><i data-lucide="paperclip"></i></span>More Annexures</button>
     </div>
     <div class="sb-section" id="tables-nav" style="display:none">
@@ -1935,58 +1935,64 @@
   </div>
 </div>
 
-      <!-- ═══ ANNEXURE VII ═══ -->
+      <!-- ANNEXURE VII -->
 <div id="view-anx7" class="view">
   <div class="header-row">
     <div>
-      <div class="page-title">Annexure VII — Final Patta Lands</div>
-      <div class="page-sub">Final patta land summary with ownership and area details</div>
+      <div class="page-title">Annexure VII - Transportation Routes</div>
+      <div class="page-sub">Transportation routes for individual leases and leases in clusters</div>
     </div>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <button class="btn btn-excel-template btn-sm" onclick="downloadAnxTemplate(7)">
-        <i data-lucide="file-spreadsheet" style="width:14px; height:14px;"></i>
-        <span>Excel Template</span>
-      </button>
-      <label class="btn btn-excel-upload btn-sm" style="cursor:pointer; margin-bottom:0; display:inline-flex; align-items:center; gap:6px;">
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+      <span id="anx7-uploaded-filename" style="font-size:12px; color:var(--text-soft); font-weight:600; display:none; padding:4px 8px; background:var(--off); border-radius:var(--r-xs); border:1px solid var(--border);"></span>
+      <button id="anx7-preview-btn" class="btn btn-outline btn-sm" style="display:none; align-items:center; gap:6px;" onclick="togglePDFPreviewAnx7()"><i data-lucide="eye" style="width:14px; height:14px;"></i> Preview PDF</button>
+      <button id="anx7-download-btn" class="btn btn-pdf-download btn-sm" style="display:none;" onclick="downloadPdfAnx7()"><i data-lucide="download" style="width:14px; height:14px;"></i> Download PDF</button>
+      <button id="anx7-delete-btn" class="btn btn-danger btn-sm" style="display:none; align-items:center; gap:6px;" onclick="deletePdfAnx7()"><i data-lucide="trash-2" style="width:14px; height:14px;"></i> Delete PDF</button>
+      <label class="btn btn-pdf-upload btn-sm" style="cursor:pointer; margin-bottom:0; display:inline-flex; align-items:center; gap:6px;">
         <i data-lucide="upload" style="width:14px; height:14px;"></i>
-        <span>Upload Excel</span>
-        <input type="file" accept=".xlsx,.xls" hidden onchange="handleAnxUpload(event,7)">
+        <span>Upload PDF</span>
+        <input type="file" accept="application/pdf" id="anx7-pdf-input" hidden onchange="handlePDFUploadAnx7(event)">
       </label>
-      <button class="btn btn-pdf-upload btn-sm" onclick="exportAnxPDF(7)">
-        <i data-lucide="file-text" style="width:14px; height:14px;"></i>
-        <span>Export PDF</span>
-      </button>
     </div>
   </div>
-  <div class="card">
-    <div class="card-hd"><div class="card-title"><span class="editable-title" contenteditable="true" style="border-bottom: 1px dashed var(--border-2); outline: none;">Patta Land Summary</span></div></div>
+
+  <div id="pdf-preview-section-anx7" class="card" style="display: none; border-color: #0ea5e9; margin-bottom: 24px;">
     <div class="card-bd">
-      <div class="tbl-wrap">
-        <table class="anx-tbl" id="anx7-patta-final" style="min-width:900px">
-          <thead><tr><th>Owner Name</th><th>Patta No.</th><th>Area (Ha)</th><th>District</th><th>Tehsil</th><th>Village</th><th>Remarks</th><th>Action</th></tr></thead>
-          <tbody>
-            <tr>
-              <td contenteditable>Jaswinder Singh</td>
-              <td contenteditable>123/1</td>
-              <td contenteditable>2.50</td>
-              <td contenteditable>Jalandhar</td>
-              <td contenteditable>Phillaur</td>
-              <td contenteditable>Kadiana</td>
-              <td contenteditable>Agricultural</td>
-              <td>
-                <button class="btn btn-xs btn-danger" onclick="delRow(this)" style="display:inline-flex; align-items:center; justify-content:center; padding:4px;">
-                  <i data-lucide="trash-2" style="width:12px; height:12px;"></i>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="margin: 0; font-size: 18px; color: #0369a1;">Uploaded PDF Preview</h3>
+        <button class="btn btn-sm btn-danger" onclick="closePDFPreviewAnx7()" style="display:inline-flex; align-items:center; gap:6px;">
+          <i data-lucide="x" style="width:14px; height:14px;"></i>
+          <span>Close Preview</span>
+        </button>
       </div>
-      <button class="btn btn-xs btn-outline" style="margin-top:8px; display:inline-flex; align-items:center; gap:6px;" onclick="addRow('anx7-patta-final',['','','0.00','','','','','<button class=\'btn btn-xs btn-danger\' onclick=\'delRow(this)\' style=\'display:inline-flex;align-items:center;justify-content:center;padding:4px;\'><i data-lucide=\'trash-2\' style=\'width:12px;height:12px;\'></i\></button>']);">
-        <i data-lucide="plus" style="width:12px; height:12px;"></i>
-        <span>Add Patta Land</span>
-      </button>
+      <iframe id="pdf-iframe-anx7" style="width: 100%; height: 600px; border: 1px solid #e5e7eb; border-radius: 6px; background: #f9fafb;"></iframe>
     </div>
+  </div>
+
+  <div id="anx7-individual-routes-container">
+    <!-- table blocks injected dynamically -->
+  </div>
+  <div style="margin-bottom:30px; margin-top:12px;">
+    <button class="btn btn-sm btn-pdf-upload" onclick="addRouteTableBlockAnx7()" style="display:inline-flex; align-items:center; gap:6px;">
+      <i data-lucide="plus-circle" style="width:14px; height:14px;"></i>
+      <span>Add Another Table / Section</span>
+    </button>
+  </div>
+
+  <div id="anx7-cluster-routes-container">
+    <!-- table blocks injected dynamically -->
+  </div>
+  <div style="margin-bottom:30px; margin-top:12px;">
+    <button class="btn btn-sm btn-pdf-upload" onclick="addClusterTableBlockAnx7()" style="display:inline-flex; align-items:center; gap:6px;">
+      <i data-lucide="plus-circle" style="width:14px; height:14px;"></i>
+      <span>Add Another Table / Section</span>
+    </button>
+  </div>
+
+  <div class="final-actions" style="margin-top:32px; display:flex; justify-content:center;">
+    <button class="btn btn-pdf-upload btn-lg" onclick="exportAnx7PDF()" style="display:inline-flex; align-items:center; gap:8px;">
+      <i data-lucide="file-text" style="width:18px; height:18px;"></i>
+      <span>Download Final Annexure 7 PDF</span>
+    </button>
   </div>
 </div>
 
@@ -2019,7 +2025,8 @@
                 <option value="anx5-msand">Annexure V(d) — M-Sand Plants</option>
                 <option value="anx6-final-clusters">Annexure VI — Final Clusters</option>
                 <option value="anx6-contiguous-clusters">Annexure VI — Final Contiguous Clusters</option>
-                <option value="anx7-patta-final">Annexure VII — Final Patta Lands</option>
+                <option value="anx7-routes">Annexure VII — Lease Routes</option>
+                <option value="anx7-cluster-routes">Annexure VII — Cluster Routes</option>
               </select>
               <label class="btn btn-excel-upload btn-sm" style="cursor:pointer; margin-bottom:0; display:inline-flex; align-items:center; gap:6px;">
                 <i data-lucide="upload" style="width:14px; height:14px;"></i>
@@ -2459,23 +2466,23 @@
 <div class="toast" id="toast"></div>
 
 <script src="js/state.js?v=1780269038119"></script>
-<script src="js/navigation.js?v=1780277951859"></script>
+<script src="js/navigation.js?v=1780279657539"></script>
 <script src="js/auth.js?v=1780269038024"></script>
 <script src="js/projects.js?v=1780269038100"></script>
 <script src="js/frontmatter.js?v=1780269038043"></script>
 <script src="js/chapters.js?v=1780269038033"></script>
 <script src="js/plates.js?v=1780269038090"></script>
 <script src="js/graphs.js?v=1780269038053"></script>
-<script src="js/tables.js?v=1780272005520"></script>
+<script src="js/tables.js?v=1780279669568"></script>
 <script src="js/anx1.js?v=1780269037953"></script>
 <script src="js/anx2.js?v=1780269037963"></script>
 <script src="js/anx3.js?v=1780269037974"></script>
 <script src="js/anx4.js?v=1780269037984"></script>
 <script src="js/anx5.js?v=1780269037994"></script>
-<script src="js/anx6.js?v=1780271990325"></script>
-<script src="js/anx7.js?v=1780269038014"></script>
+<script src="js/anx6.js?v=1780280611432"></script>
+<script src="js/anx7.js?v=1780280575478"></script>
 <script src="js/signatures.js?v=1780269038109"></script>
-<script src="js/pdf.js?v=1780272242810"></script>
+<script src="js/pdf.js?v=1780279679268"></script>
 <script src="js/main.js?v=1780269038063"></script>
 </body>
 </html>
